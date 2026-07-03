@@ -1,0 +1,66 @@
+================================================================================
+PROJECT ARCHITECT & IMPLEMENTATION PROMPT: JAVA GAMING BOT ARENA (LLM-POWERED)
+================================================================================
+
+You are an expert Java Developer and AI System Architect. Your task is to build a Java-based autonomous gaming bot designed to compete in an online arena. The bot will leverage a local LLM via Ollama for strategic decision-making and a real-time UI for monitoring telemetry.
+
+--------------------------------------------------------------------------------
+PHASE 1 - BRAINSTORM & ENVIRONMENT SETUP (Output: skill.txt)
+--------------------------------------------------------------------------------
+1. Core Reference & API Inspection:
+   - Target Game Arena URL: https://arena.pmonteiro.ovh/?room=[ROOM_CODE]
+   - API Documentation: https://arena.pmonteiro.ovh/docs
+   - Resource Parsing: Analyze all provided knowledge base files (.pdf, .txt, .md) to understand the full game mechanics, constraints, rules, and scoring system.
+
+2. Ollama Local LLM Optimization:
+   - Configure the local Ollama instance with the following server/environment parameters for high-throughput, low-latency execution:
+     * OLLAMA_NUM_PARALLEL = [Optimize based on system, e.g., 4] (Enable parallel request processing)
+     * OLLAMA_KEEP_ALIVE = -1 (Keep models resident in memory indefinitely to avoid reload latency)
+     * OLLAMA_MAX_LOADED_MODELS = [Optimize, e.g., 2] (Allow multiple specialized models if needed)
+     * OLLAMA_FLASH_ATTENTION = 1 (Enable Flash Attention for faster context processing)
+   - Temperature Strategy: 
+     * Default Strategy/Navigation: Medium-low temperature for structured tactical moves.
+     * Opening Chests: Set LLM temperature to very LOW (0.0 to 0.2) to ensure strict, deterministic compliance with chest-opening algorithms/riddles without creative hallucination.
+
+3. Telemetry, Map Memory, and UI Requirements:
+   - The system must feature a real-time graphical UI (JavaFX or Swing) with three core sections:
+     * Room Code Input & Controls: A field to insert/change the active room code and start/stop the bot.
+     * Real-time AI Analytics: Live graphs or trackers displaying AI latency, Ollama token usage, decision time, and API response status.
+     * Visual Telemetry Dashboard: A live visual representation of the game state featuring:
+       - A custom rendered table/grid map.
+       - Distinct visual icons/colors for key entities: Purple for Chests, Yellow for Energy/Power-ups, and custom indicators for walls, empty space, and the bot itself.
+   - Spatial Memory System: The bot must parse the map data from the API into a clean structured format (JSON or a matrix/table representation). It must maintain a persistent memory/graph of the map layout to remember discovered walls, open paths, and unvisited areas, preventing redundant API calls or backtracking into dead ends.
+4. Dual-Brain AI Architecture (Commander-Strategist Concept):
+   - Implement a split-responsibility system separating high-level strategy from low-level execution:
+     * Tier 1: The Commander-Strategist (Local CPU LLM). Runs asynchronously (not on every tick, but every 5-10 seconds or upon major game events). It reads the full persistent JSON/matrix map memory. Its job is macro-strategy: assessing total energy trends, identifying high-density chest zones, and setting overriding mission objectives (e.g., "Objective: Retain energy, avoid combat" or "Objective: Rush the Purple Chest cluster at grid X,Y").
+     * Tier 2: The Tactical Reflex Engine (Native Java Code / A* Pathfinding). Runs on every game tick with near-zero latency. It takes the "Objective" set by the Commander and handles the immediate frame-by-frame navigation—calculating paths, avoiding newly discovered walls, and steering toward the target coordinates.
+     * Tier 3: The Chest Specialist (Ollama, Low Temp). Triggered strictly when standing on a chest tile to solve interaction prompts.
+   - Define a clean Threading & Concurrency model in Java so the CPU-bound Commander LLM calls never block the main game tick loop or freeze the UI telemetry dashboard.
+--------------------------------------------------------------------------------
+PHASE 2 - IMPLEMENTATION
+--------------------------------------------------------------------------------
+1. Smart Pathfinding & Mapping:
+   - Implement efficient grid mapping. The bot must scan the map reactively and proactively.
+   - Wall Avoidance: Program the bot to never attempt moves toward known obstacles (walls) or dead zones, maximizing energy efficiency.
+   - Prioritize targeting high-value items (Purple Chests) and replenishment resources (Yellow Energy) based on proximity and cost-benefit analysis.
+
+2. Code Architecture:
+   - Clean, modular Java design (e.g., separating API client, UI Controller, Pathfinding Engine, and Ollama Connector).
+   - Robust JSON serialization/deserialization for API requests and map storage.
+
+--------------------------------------------------------------------------------
+PHASE 3 - FINAL BUG CHECKING & ADVANCED BRAINSTORMING
+--------------------------------------------------------------------------------
+1. Edge Case Handling & Bug Verification:
+   - Handle API timeouts, rate-limiting, and unexpected disconnects gracefully with automatic reconnection or state-recovery.
+   - Prevent infinite movement loops (stuck between two tiles).
+   - Manage memory leaks arising from continuous real-time UI rendering and rapid local LLM API calls.
+
+2. Strategy Enhancement:
+   - Brainstorm adaptive strategies: What should the bot do if its energy drops below a critical threshold? How should it adapt if another bot is competing for the same purple chest?
+   - Output a final refinement plan to maximize the bot's win-rate in the arena.
+
+================================================================================
+INSTRUCTIONS FOR THE AI:
+Review the details above. Start by executing PHASE 1: Brainstorm the system architecture, write the 'skill.txt' guide outlining the API structure and movement logic, and propose the Java class structure for the project. Wait for my approval before coding Phase 2.
+================================================================================
