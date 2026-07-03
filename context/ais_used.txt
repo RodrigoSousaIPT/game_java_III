@@ -1,0 +1,6 @@
+chest open: https://huggingface.co/LiquidAI/LFM2-350M-Extract-GGUF /Q5_K_M
+embedding: https://huggingface.co/LiquidAI/LFM2.5-Embedding-350M-GGUF /Q4_K_M
+bot movement: https://huggingface.co/unsloth/Qwen3.5-0.8B-MTP-GGUF /Q3_K_S (thinking disabled) OR https://huggingface.co/LiquidAI/LFM2.5-350M-GGUF /Q6_K
+COMMANDER-STRATEGIST: https://huggingface.co/ssfdre38/gemma4-nano-ggu/E2B Q3_K_S
+
+the llms used need to be easy changeable in config file near the ps1 file
