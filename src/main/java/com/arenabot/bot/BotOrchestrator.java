@@ -65,6 +65,8 @@ public final class BotOrchestrator {
 
     private final AtomicReference<GameState> last = new AtomicReference<>();
     private final AtomicLong ticks = new AtomicLong();
+    /** Last observed game_started flag — drives the round-start checker. */
+    private volatile boolean roundStarted;
     private ScheduledExecutorService scheduler;
     private String robotId;
     private volatile boolean running;
@@ -130,6 +132,7 @@ public final class BotOrchestrator {
         if (running) return;
         this.activeRoomCode = roomCode == null || roomCode.isBlank() ? config.roomCode() : roomCode;
         running = true;
+        roundStarted = false;
         String suffix = UUID.randomUUID().toString().substring(0, 8);
         robotId = config.robotIdPrefix() + "-" + suffix;
         try {
@@ -189,6 +192,25 @@ public final class BotOrchestrator {
             memory.observe(state);
             MemorySnapshot snap = memory.snapshot();
             commander.updateSnapshot(snap, isLowEnergy(state));
+
+            // Round-start checker: while the admin has not started the game,
+            // keep perceiving (so the map/UI stay live) but submit nothing —
+            // the server rejects every action with "bloqueado" anyway.
+            if (!state.hasGameStarted() && !state.hasGameOver()) {
+                if (roundStarted) {
+                    roundStarted = false;
+                    LOG.info("round reset by server — back to waiting (room={})", room);
+                }
+                if (ticks.get() % 10 == 1) {
+                    LOG.info("waiting for round start (room={}, robot={})", room, robotId);
+                }
+                return;
+            }
+            if (!roundStarted && state.hasGameStarted()) {
+                roundStarted = true;
+                stuck.reset();
+                LOG.info("round STARTED (room={}) — engaging", room);
+            }
 
             // Phase 3 §1 — stuck-tile detection.
             GridPos meTile = GridPos.of(state.meuEstado().x(), state.meuEstado().y());

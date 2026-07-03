@@ -48,6 +48,7 @@ public final class ArenaDashboard {
 
     private static final Color VERDE    = new Color(0x1B7F3B);
     private static final Color VERMELHO = new Color(0xB00020);
+    private static final Color LARANJA  = new Color(0xE65100);
 
     private final JFrame frame = new JFrame("Arena Bot — Agente Explorador (dual-brain LLM)");
 
@@ -253,6 +254,17 @@ public final class ArenaDashboard {
             lblTempo.setText("Tempo: " + ((System.currentTimeMillis() - inicioMs) / 1000) + "s");
             String id = orchestrator.robotId();
             if (id != null) lblRobot.setText("Robot: " + id);
+            // Checker da ronda: estado colorido conforme a fase do jogo.
+            if (s != null) {
+                String sala = orchestrator.activeRoomCode();
+                if (s.hasGameOver()) {
+                    estado("Ligado a " + sala + " — ronda terminada", VERMELHO);
+                } else if (s.hasGameStarted()) {
+                    estado("Ligado a " + sala + " — ronda A DECORRER", VERDE);
+                } else {
+                    estado("Ligado a " + sala + " — à espera do início da ronda…", LARANJA);
+                }
+            }
         }
 
         // Monitor IA.

@@ -150,10 +150,14 @@ public final class ArenaApiClient {
     /* ---------- low-level helpers ---------- */
 
     private HttpRequest.Builder jsonRequest(String url) {
+        // Content-Type is mandatory: FastAPI refuses to parse a JSON body
+        // without it and answers 422 before reaching the game logic (seen
+        // live on POST /arena/action).
         return HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .timeout(Duration.ofSeconds(15))
-                .header("Accept", "application/json");
+                .header("Accept", "application/json")
+                .header("Content-Type", "application/json");
     }
 
     private <T> T sendJson(HttpRequest req, Function<JsonNode, T> mapper) throws IOException {
@@ -165,7 +169,10 @@ public final class ArenaApiClient {
             throw new IOException("Interrupted while calling " + req.uri());
         }
         if (resp.statusCode() / 100 != 2) {
-            throw new IOException("HTTP " + resp.statusCode() + " for " + req.uri());
+            // Keep the server's validation detail — a bare status code hid
+            // the 422 root cause for far too long.
+            throw new IOException("HTTP " + resp.statusCode() + " for " + req.uri()
+                    + " body[:300]=" + truncate(resp.body(), 300));
         }
         JsonNode body = resp.body() == null || resp.body().isEmpty()
                 ? json.createObjectNode() : json.readTree(resp.body());
@@ -174,6 +181,10 @@ public final class ArenaApiClient {
 
     private static String enc(String s) {
         return URLEncoder.encode(s, StandardCharsets.UTF_8);
+    }
+
+    private static String truncate(String s, int n) {
+        return s == null ? "" : (s.length() <= n ? s : s.substring(0, n) + "…");
     }
 
     private static String textOr(JsonNode n, String f, String d) {
