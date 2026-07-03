@@ -266,8 +266,10 @@ function Start-Bot {
     }
 
     # JVM flags (-D..., headless) MUST come before -jar; anything after the
-    # jar path is handed to Main as a program argument instead.
-    $javaArgs = $jvmArgs + @('-jar', $JarPath, $ConfigPath)
+    # jar path is handed to Main as a program argument instead. Paths are
+    # quoted because Start-Process re-joins the list into one command line
+    # and unquoted spaces (e.g. "D:\Projeto BOT") split the jar path.
+    $javaArgs = $jvmArgs + @('-jar', ('"{0}"' -f $JarPath), ('"{0}"' -f $ConfigPath))
     Write-Cmd "java $($javaArgs -join ' ')"
 
     $proc = Start-Process -FilePath 'java' `
