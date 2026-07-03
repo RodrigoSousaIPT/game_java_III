@@ -47,8 +47,12 @@ public final class Main {
 
     public static void main(String[] args) throws IOException {
         AppConfig config = AppConfig.load(args.length > 0 ? Paths.get(args[0]) : null);
-        LOG.info("loaded config room={} tick={}ms commander={}ms",
-                config.roomCode(), config.tickMs(), config.commanderPeriodMs());
+        // run-bot.ps1 -Room passes -Darenabot.room.code=<code>; it overrides
+        // config for this launch without rewriting config/config.json.
+        String roomOverride = System.getProperty("arenabot.room.code", "").trim();
+        LOG.info("loaded config room={} tick={}ms commander={}ms{}",
+                config.roomCode(), config.tickMs(), config.commanderPeriodMs(),
+                roomOverride.isEmpty() ? "" : " (room override=" + roomOverride + ")");
 
         ArenaApiClient api = new ArenaApiClient(config.arenaBaseUrl());
         MapMemory memory = new MapMemory();
@@ -69,21 +73,38 @@ public final class Main {
                 prompts,
                 new CircuitBreaker(),
                 adaptive, opponents, vaultLedger);
+        orchestrator.attachMoveOracle(ollama);
         TelemetryBus bus = new TelemetryBus();
+        ollama.attachTelemetry(bus);
 
-        boolean headless = GraphicsEnvironment.isHeadless();
-        if (!headless) {
-            TelemetryDashboard ui = new TelemetryDashboard(config, orchestrator, bus);
-            ui.show();
-        } else {
-            LOG.info("headless JVM — running without Swing dashboard");
-        }
+        // Load all four role models into VRAM now (keep_alive=-1m pins them),
+        // so the first real tick never eats a cold-load latency spike.
+        ollama.warmUpAll();
 
         // Graceful shutdown so the scheduler's executor really stops.
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             LOG.info("shutdown hook: stopping orchestrator");
             orchestrator.stop();
         }, "shutdown"));
+
+        boolean headless = GraphicsEnvironment.isHeadless();
+        if (!headless) {
+            TelemetryDashboard ui = new TelemetryDashboard(config, orchestrator, bus);
+            if (!roomOverride.isEmpty()) ui.overrideRoomCode(roomOverride);
+            ui.show();
+        } else {
+            // No dashboard start button in headless mode — start immediately
+            // and park the main thread; the tick scheduler runs on daemon
+            // threads, so returning here would end the JVM.
+            LOG.info("headless JVM — starting bot without Swing dashboard");
+            orchestrator.startWithRoomCode(roomOverride.isEmpty() ? config.roomCode() : roomOverride);
+            try {
+                Thread.currentThread().join();
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                LOG.info("main thread interrupted — shutting down");
+            }
+        }
     }
 
     /** Convenience construction site for tests/smoke tests. */

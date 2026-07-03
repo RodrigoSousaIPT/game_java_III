@@ -11,7 +11,8 @@ public final class ModelConfig {
 
     private String modelName;
     private double temperature;
-    private String keepAlive = "24h";
+    private int numPredict = -1;
+    private String keepAlive = "-1m";
     private String notes = "";
 
     public ModelConfig() {}
@@ -29,8 +30,10 @@ public final class ModelConfig {
         m.modelName = name == null || name.isNull() ? "" : name.asText("");
         JsonNode temp = n.get("temperature");
         m.temperature = temp == null || !temp.isNumber() ? 0.2 : temp.asDouble();
+        JsonNode np = n.get("num_predict");
+        m.numPredict = np == null || !np.canConvertToInt() ? -1 : np.asInt();
         JsonNode ka = n.get("keep_alive");
-        m.keepAlive = ka == null || ka.isNull() ? "24h" : ka.asText("24h");
+        m.keepAlive = ka == null || ka.isNull() ? "-1m" : ka.asText("-1m");
         JsonNode nt = n.get("notes");
         m.notes = nt == null || nt.isNull() ? "" : nt.asText("");
         return m;
@@ -38,11 +41,14 @@ public final class ModelConfig {
 
     public String modelName() { return modelName; }
     public double temperature() { return temperature; }
+    /** Max tokens to generate; -1 / 0 means "model default" (option omitted). */
+    public int numPredict() { return numPredict; }
     public String keepAlive() { return keepAlive; }
     public String notes() { return notes; }
 
     public void setModelName(String modelName) { this.modelName = modelName; }
     public void setTemperature(double temperature) { this.temperature = temperature; }
+    public void setNumPredict(int numPredict) { this.numPredict = numPredict; }
     public void setKeepAlive(String keepAlive) { this.keepAlive = keepAlive; }
     public void setNotes(String notes) { this.notes = notes; }
 }

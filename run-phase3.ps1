@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Run and commit "Phase 3 — Final Bug Checking & Advanced Brainstorming"
     of the Java Arena Bot project.

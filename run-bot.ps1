@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Interactive launcher for the Arena Bot with a text menu and built-in
     telemetry support (Swing dashboard + tail-able log).
@@ -219,9 +219,11 @@ function Get-StoredPid {
     if (-not (Test-Path $PidFile)) { return $null }
     $raw = (Get-Content -LiteralPath $PidFile -ErrorAction SilentlyContinue | Select-Object -First 1)
     if (-not $raw) { return $null }
-    $pid = 0
-    if ([int]::TryParse($raw, [ref]$pid) -and (Get-Process -Id $pid -ErrorAction SilentlyContinue)) {
-        return $pid
+    # NOTE: $pid is a read-only automatic variable in PowerShell — assigning
+    # to it throws. Use $procId instead.
+    $procId = 0
+    if ([int]::TryParse($raw, [ref]$procId) -and (Get-Process -Id $procId -ErrorAction SilentlyContinue)) {
+        return $procId
     }
     return $null
 }
@@ -261,11 +263,13 @@ function Start-Bot {
         $jvmArgs += "-Darenabot.room.code=$RoomOverride"
     }
 
-    $args = @('-jar', $JarPath, $ConfigPath) + $jvmArgs
-    Write-Cmd "java $($args -join ' ')"
+    # JVM flags (-D..., headless) MUST come before -jar; anything after the
+    # jar path is handed to Main as a program argument instead.
+    $javaArgs = $jvmArgs + @('-jar', $JarPath, $ConfigPath)
+    Write-Cmd "java $($javaArgs -join ' ')"
 
     $proc = Start-Process -FilePath 'java' `
-        -ArgumentList $args `
+        -ArgumentList $javaArgs `
         -WorkingDirectory $ProjectRoot `
         -RedirectStandardOutput $logFile `
         -RedirectStandardError  "$logFile.err" `
@@ -285,15 +289,15 @@ function Start-Bot {
 }
 
 function Stop-Bot {
-    $pid = Get-StoredPid
-    if (-not $pid) { Write-Warn "No running bot (pid file empty or stale)." ; return }
-    Write-Banner "Stopping bot PID $pid ..."
+    $procId = Get-StoredPid
+    if (-not $procId) { Write-Warn "No running bot (pid file empty or stale)." ; return }
+    Write-Banner "Stopping bot PID $procId ..."
     try {
-        Stop-Process -Id $pid -Force
+        Stop-Process -Id $procId -Force
         Start-Sleep -Milliseconds 400
-        if (Get-Process -Id $pid -ErrorAction SilentlyContinue) {
-            Write-Warn "Process still alive — issuing `taskkill /F /T /PID $pid`."
-            & taskkill /F /T /PID $pid | Out-Null
+        if (Get-Process -Id $procId -ErrorAction SilentlyContinue) {
+            Write-Warn "Process still alive — issuing `taskkill /F /T /PID $procId`."
+            & taskkill /F /T /PID $procId | Out-Null
         }
         Remove-Item -LiteralPath $PidFile -Force -ErrorAction SilentlyContinue
         Write-Info "Bot stopped."
@@ -356,8 +360,8 @@ function Show-Menu {
     $cfg = Read-ConfigObject
     $room = if ($cfg) { "$($cfg.room_code)" } else { '(none)' }
     $ollama = if ($cfg) { "$($cfg.ollama_base_url)" } else { '(none)' }
-    $pid = Get-StoredPid
-    $status = if ($pid) { "RUNNING (PID $pid)" } else { 'stopped' }
+    $procId = Get-StoredPid
+    $status = if ($procId) { "RUNNING (PID $procId)" } else { 'stopped' }
     Write-Host ''
     Write-Host '====================================================================' -ForegroundColor Cyan
     Write-Host "              ARENA BOT  ::  room=$room   ollama=$ollama"               -ForegroundColor Cyan
@@ -372,6 +376,7 @@ function Show-Menu {
     Write-Host '  7) Run JUnit (Phase 3 resilience + strategy)'
     Write-Host '  8) Tail latest bot log (Ctrl+C to leave tail)'
     Write-Host '  9) Stop running bot'
+    Write-Host '  O) Apply Ollama GPU optimization (scripts/setup-ollama.ps1)'
     Write-Host '  0) Exit'
     Write-Host '====================================================================' -ForegroundColor Cyan
     if ($Room)          { Write-Warn "  -Room override active for this session: $Room" }
@@ -393,7 +398,7 @@ Write-Info ("Jar          : $JarPath")
 
 while ($true) {
     Show-Menu
-    $pick = Read-Choice -Prompt '> pick [0-9, q] ' -Valid @('1','2','3','4','5','6','7','8','9','0','q','Q')
+    $pick = Read-Choice -Prompt '> pick [0-9, O, q] ' -Valid @('1','2','3','4','5','6','7','8','9','0','q','Q','o','O')
 
     switch ($pick) {
         '1'  { Start-Bot -HeadlessMode:$false -RoomOverride:$Room }
@@ -405,6 +410,10 @@ while ($true) {
         '7'  { Run-Tests }
         '8'  { Tail-BotLog -Lines 30 }
         '9'  { Stop-Bot }
+        { $_ -in 'o','O' } {
+            $setup = Join-Path $ProjectRoot 'scripts/setup-ollama.ps1'
+            if (Test-Path $setup) { & $setup } else { Write-Err "Missing $setup" }
+        }
         '0'  { Write-Info 'Goodbye.' ; return }
         'q'  { Write-Info 'Goodbye.' ; return }
         'Q'  { Write-Info 'Goodbye.' ; return }

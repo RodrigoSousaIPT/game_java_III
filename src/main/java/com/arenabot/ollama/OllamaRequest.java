@@ -15,7 +15,9 @@ public final class OllamaRequest {
     public String prompt;
     public boolean stream = false;
     public double temperature = 0.4;
-    public String keepAlive = "24h";
+    /** Max tokens to generate; <= 0 means "leave to the model default". */
+    public int numPredict = -1;
+    public String keepAlive = "-1m";
     public final ArrayNode stop = new ObjectMapper().createArrayNode();
 
     public static OllamaRequest of(String model, String prompt, double temperature) {
@@ -39,6 +41,7 @@ public final class OllamaRequest {
         n.put("stream", stream);
         ObjectNode opts = n.putObject("options");
         opts.put("temperature", temperature);
+        if (numPredict > 0) opts.put("num_predict", numPredict);
         if (!stop.isEmpty()) opts.set("stop", stop);
         n.put("keep_alive", keepAlive);
         return n.toString();

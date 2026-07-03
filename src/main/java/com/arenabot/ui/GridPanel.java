@@ -54,6 +54,7 @@ public final class GridPanel extends JPanel {
         // Walls first — recolour every tile known to contain a parede_* / cubo.glb.
         g.setColor(ColorScheme.TILE_WALL);
         for (ObjetoFixo w : snap.walls()) {
+            if (!w.isWall()) continue; // decor objects are not obstacles
             fillTile(g, (int) Math.round(w.x()), (int) Math.round(w.y()));
         }
 

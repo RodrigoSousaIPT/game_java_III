@@ -36,10 +36,7 @@ public final class TelemetryDashboard {
 
         header = new RoomCodePanel(config.roomCode());
         header.onStart = this::startBot;
-        header.onStop  = () -> {
-            orchestrator.stop();
-            header.setStatus("stopped");
-        };
+        header.onStop  = this::stopBot;
         grid = new GridPanel(config.ui().gridPixelSize(), config.ui().gridXMax(), config.ui().gridYMax());
         analytics = new AnalyticsPanel(bus);
 
@@ -85,9 +82,30 @@ public final class TelemetryDashboard {
         return orchestrator.stateSnapshotForUi();
     }
 
+    /** Pre-fills the room code field (used by the -Room launcher override). */
+    public void overrideRoomCode(String roomCode) {
+        SwingUtilities.invokeLater(() -> header.setRoomCode(roomCode));
+    }
+
     private void startBot(String roomCode) {
-        config.getClass(); // keep parameter used; orchestrator uses config-bound room below.
-        orchestrator.startWithRoomCode(roomCode);
-        header.setStatus("running");
+        // startWithRoomCode registers against the arena with a blocking
+        // backoff loop — never run it on the EDT or the UI freezes.
+        header.setStatus("starting…");
+        Thread t = new Thread(() -> {
+            orchestrator.startWithRoomCode(roomCode);
+            SwingUtilities.invokeLater(() -> header.setStatus("running"));
+        }, "bot-start");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    private void stopBot() {
+        header.setStatus("stopping…");
+        Thread t = new Thread(() -> {
+            orchestrator.stop();
+            SwingUtilities.invokeLater(() -> header.setStatus("stopped"));
+        }, "bot-stop");
+        t.setDaemon(true);
+        t.start();
     }
 }

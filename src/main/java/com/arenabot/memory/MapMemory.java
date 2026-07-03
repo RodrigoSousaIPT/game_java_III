@@ -94,12 +94,15 @@ public final class MapMemory {
         }
     }
 
-    /** True iff any {@code parede_*} id has been seen at (tileX, tileY). */
+    /** True iff any {@code parede_*} / {@code cubo.glb} object has been seen at
+     *  (tileX, tileY). Non-wall fixed objects (decor) never block pathfinding. */
     public boolean isWallAt(int tileX, int tileY) {
         rw.readLock().lock();
         try {
             for (ObjetoFixo w : walls) {
-                if ((int) Math.round(w.x()) == tileX && (int) Math.round(w.y()) == tileY) return true;
+                if (w.isWall()
+                        && (int) Math.round(w.x()) == tileX
+                        && (int) Math.round(w.y()) == tileY) return true;
             }
             return false;
         } finally {

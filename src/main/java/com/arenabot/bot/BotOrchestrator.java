@@ -19,15 +19,21 @@ import com.arenabot.resilience.StuckTileDetector;
 import com.arenabot.strategy.AdaptiveStrategy;
 import com.arenabot.strategy.OpponentAwareness;
 import com.arenabot.strategy.VaultAttemptLedger;
+import com.arenabot.ollama.LlmRole;
+import com.arenabot.ollama.OllamaClient;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -61,6 +67,14 @@ public final class BotOrchestrator {
     private String robotId;
     private volatile boolean running;
     private volatile String activeRoomCode;
+
+    // BOT_MOVE fallback oracle (lfm2.5-350m): consulted async when A* has no
+    // route; its one-word suggestion is consumed on the next tick.
+    private volatile OllamaClient moveOracle; // optional
+    private final AtomicReference<Action> oracleSuggestion = new AtomicReference<>();
+    private final AtomicBoolean oracleInFlight = new AtomicBoolean(false);
+    private static final List<Action> STUCK_ESCAPES =
+            List.of(Action.RECUAR, Action.GIRAR_ESQ, Action.GIRAR_DIR, Action.AVANCAR);
 
     /* --------- constructors --------- */
 
@@ -102,6 +116,9 @@ public final class BotOrchestrator {
         this.opponents = opponents;
         this.vaultLedger = vaultLedger;
     }
+
+    /** Optional wiring for the BOT_MOVE fallback oracle (config role {@code bot_move}). */
+    public void attachMoveOracle(OllamaClient ollama) { this.moveOracle = ollama; }
 
     /* --------- lifecycle --------- */
 
@@ -171,9 +188,11 @@ public final class BotOrchestrator {
             // Phase 3 §1 — stuck-tile detection.
             GridPos meTile = GridPos.of(state.meuEstado().x(), state.meuEstado().y());
             if (stuck.observe(meTile)) {
-                LOG.warn("stuck-tile detector triggered on {} (trail={}); randomising next step",
-                        meTile, stuck.trailSize());
-                submitRawAction(room, ActionVocabulary.primary(Action.AVANCAR));
+                Action escape = STUCK_ESCAPES.get(
+                        ThreadLocalRandom.current().nextInt(STUCK_ESCAPES.size()));
+                LOG.warn("stuck-tile detector triggered on {} (trail={}); random escape={}",
+                        meTile, stuck.trailSize(), escape);
+                submitRawAction(room, ActionVocabulary.primary(escape));
                 stuck.reset();
                 return;
             }
@@ -182,7 +201,11 @@ public final class BotOrchestrator {
             CofreNoMundo onTile = findVaultUnderMe(state, snap);
             if (onTile != null) {
                 chestSpecialist.solveVault("Unlock cofre " + onTile.id())
-                        .thenAccept(plan -> submitUnlock(onTile, plan.code(), plan.ragChunk(), plan.llmRaw()));
+                        .thenAccept(plan -> submitUnlock(onTile, plan.code(), plan.ragChunk(), plan.llmRaw()))
+                        .exceptionally(ex -> {
+                            LOG.warn("chest specialist failed for cofre {}: {}", onTile.id(), ex.toString());
+                            return null;
+                        });
                 return;
             }
 
@@ -295,12 +318,55 @@ public final class BotOrchestrator {
         GridPos goal = GridPos.of(obj.targetX(), obj.targetY());
         PathResult path = pathfinder.findPath(me, goal, 1.25);
         if (!path.found()) {
-            LOG.info("no A* route {} -> {} ({}); falling back", me, goal, path.reason());
-            return Action.AVANCAR;
+            LOG.info("no A* route {} -> {} ({}); consulting move oracle", me, goal, path.reason());
+            return oracleFallback(me, goal);
         }
         GridPos next = path.nextStep().orElse(me);
         if (next.equals(me)) return onArrival;
         return Action.AVANCAR;
+    }
+
+    /**
+     * When A* fails, use the small bot_move model (lfm2.5-350m, medium-low
+     * temperature) as a movement oracle. The call is async: this tick consumes
+     * a previous suggestion if one landed, otherwise fires a new query and
+     * keeps moving. Without an attached oracle the old AVANCAR fallback stands.
+     */
+    private Action oracleFallback(GridPos me, GridPos goal) {
+        Action suggested = oracleSuggestion.getAndSet(null);
+        if (suggested != null) {
+            LOG.info("move oracle suggestion consumed: {}", suggested);
+            return suggested;
+        }
+        OllamaClient oracle = moveOracle;
+        if (oracle != null && oracleInFlight.compareAndSet(false, true)) {
+            String prompt = "Robot at (" + me.x() + "," + me.y() + ") wants to reach ("
+                    + goal.x() + "," + goal.y() + ") but the direct route is blocked.\n"
+                    + "Reply with EXACTLY one word: avancar, recuar, girar_esq or girar_dir.";
+            oracle.generateAsync(LlmRole.BOT_MOVE, prompt)
+                    .whenComplete((resp, ex) -> {
+                        oracleInFlight.set(false);
+                        if (ex != null || resp == null) return;
+                        parseMove(resp.response).ifPresent(oracleSuggestion::set);
+                    });
+        }
+        return Action.AVANCAR;
+    }
+
+    /** Maps the oracle's one-word reply onto a movement action. */
+    static java.util.Optional<Action> parseMove(String reply) {
+        if (reply == null || reply.isBlank()) return java.util.Optional.empty();
+        // First whitespace token, stripped of punctuation. \p{L} keeps
+        // accented letters (avançar) that ASCII \w would split on.
+        String word = reply.trim().toLowerCase(Locale.ROOT)
+                .split("\\s+")[0].replaceAll("[^\\p{L}_]", "");
+        return switch (word) {
+            case "avancar", "avançar", "forward" -> java.util.Optional.of(Action.AVANCAR);
+            case "recuar", "back" -> java.util.Optional.of(Action.RECUAR);
+            case "girar_esq", "esquerda", "left" -> java.util.Optional.of(Action.GIRAR_ESQ);
+            case "girar_dir", "direita", "right" -> java.util.Optional.of(Action.GIRAR_DIR);
+            default -> java.util.Optional.empty();
+        };
     }
 
     private boolean isLowEnergy(GameState state) {

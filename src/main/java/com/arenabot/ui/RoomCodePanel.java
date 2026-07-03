@@ -48,4 +48,8 @@ public final class RoomCodePanel extends JPanel {
     public String currentRoomCode() {
         return roomCode.getText();
     }
+
+    public void setRoomCode(String code) {
+        roomCode.setText(code);
+    }
 }

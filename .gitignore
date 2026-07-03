@@ -45,3 +45,7 @@ Thumbs.db
 recon/
 qwe3embedd.txt
 *.tmp
+
+# --- Bot runtime artifacts ---
+data/logs/
+data/bot.pid

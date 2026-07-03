@@ -42,8 +42,9 @@ public final class StuckTileDetector {
         Set<GridPos> unique = new HashSet<>(trail);
         if (unique.size() > UNIQUE_LIMIT) return false;
 
-        long repeated = uniqueTileCount(trail);
-        return repeated > THRESHOLD;
+        // Whole window sits on ≤UNIQUE_LIMIT tiles; stuck once it has run
+        // long enough (strictly more than THRESHOLD observations).
+        return trail.size() > THRESHOLD;
     }
 
     /** Reset the trail (e.g. after a successful recovery action). */
@@ -53,11 +54,5 @@ public final class StuckTileDetector {
 
     public synchronized int trailSize() {
         return trail.size();
-    }
-
-    private static long uniqueTileCount(Deque<GridPos> trail) {
-        // Count how many entries land on any of the at-most-2 unique tiles.
-        Set<GridPos> unique = new HashSet<>(trail);
-        return trail.stream().filter(unique::contains).count();
     }
 }

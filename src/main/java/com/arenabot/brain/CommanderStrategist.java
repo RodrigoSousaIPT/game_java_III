@@ -117,12 +117,74 @@ public final class CommanderStrategist {
                                 }
                             });
             int id = runId.incrementAndGet();
-            // Periodic LLM sanity-check at half the cadence; complements heuristic.
-            if (id % 2 == 0) ollama.generateAsync(LlmRole.COMMANDER,
-                    "Commander prompt with map of size " + s.walls().size()
-                            + " walls; current objective: " + board.current().goal());
+            // Periodic LLM review at half the cadence; complements the heuristic.
+            // The reply is parsed and, when valid, overrides the board.
+            if (id % 2 == 0) {
+                String prompt = buildPrompt(s);
+                ollama.generateAsync(LlmRole.COMMANDER, prompt).thenAccept(resp -> {
+                    MissionObjective llmObj = parseObjective(resp.response);
+                    if (llmObj != null) {
+                        LOG.info("commander LLM override: {}", llmObj);
+                        board.set(llmObj);
+                    }
+                });
+            }
         } catch (Throwable t) {
             LOG.warn("commander tick failed: {}", t.toString());
         }
+    }
+
+    /** Compact world summary the small commander model can reason over. */
+    private String buildPrompt(MemorySnapshot s) {
+        StringBuilder sb = new StringBuilder(512);
+        MeuEstado me = s.me();
+        sb.append("You command a robot in a grid arena. Position=(")
+          .append((int) Math.round(me.x())).append(',').append((int) Math.round(me.y()))
+          .append(") energy=").append(me.energia()).append('\n');
+        sb.append("Known walls: ").append(s.walls().size()).append('\n');
+        s.resources().stream().limit(6).forEach(r ->
+                sb.append("resource ").append(r.type()).append(" at (")
+                  .append((int) Math.round(r.x())).append(',')
+                  .append((int) Math.round(r.y())).append(")\n"));
+        s.vaults().stream().limit(4).forEach(v ->
+                sb.append("vault ").append(v.id()).append(" at (")
+                  .append((int) Math.round(v.x())).append(',')
+                  .append((int) Math.round(v.y())).append(")\n"));
+        sb.append("Opponents: ").append(s.robots().size()).append('\n');
+        sb.append("Current objective: ").append(board.current().goal()).append('\n');
+        sb.append("Reply with EXACTLY one line: GOAL X Y\n");
+        sb.append("GOAL is one of EXPLORE, GOTO_CHEST, GOTO_ENERGY, UNLOCK_VAULT, HOLD.\n");
+        sb.append("X Y are integer target coordinates (use 0 0 for EXPLORE/HOLD).\n");
+        return sb.toString();
+    }
+
+    /**
+     * Parses "GOAL X Y" out of the LLM reply. Returns null when the reply is
+     * malformed or names an unknown goal — the heuristic objective then stands.
+     */
+    static MissionObjective parseObjective(String llmReply) {
+        if (llmReply == null || llmReply.isBlank()) return null;
+        for (String line : llmReply.split("\\R")) {
+            String[] parts = line.trim().toUpperCase().split("\\s+");
+            if (parts.length == 0) continue;
+            MissionObjective.Goal goal;
+            try {
+                goal = MissionObjective.Goal.valueOf(parts[0]);
+            } catch (IllegalArgumentException notAGoal) {
+                continue;
+            }
+            if (goal == MissionObjective.Goal.HOLD) return MissionObjective.hold("commander LLM: hold");
+            if (goal == MissionObjective.Goal.EXPLORE) return MissionObjective.explore();
+            if (parts.length < 3) return null;
+            try {
+                int x = Integer.parseInt(parts[1]);
+                int y = Integer.parseInt(parts[2]);
+                if (x < 0 || y < 0 || x > 512 || y > 512) return null;
+                return new MissionObjective(goal, x, y, "commander LLM");
+            } catch (NumberFormatException bad) {
+                return null;
+            }
+        }
+        return null;
     }
 }
