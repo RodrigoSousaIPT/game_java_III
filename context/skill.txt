@@ -1,0 +1,76 @@
+---
+name: brainstorm
+description: Gera ideias a sério — diverge primeiro (muito volume, sem julgar), depois afunila para as poucas que valem mesmo a pena. Usa esta skill sempre que o utilizador quiser ideias, esteja preso à procura de soluções, queira explorar opções, ou peça para "dar uma chuva de ideias". Frases de entrada claras: "dá-me ideias de X", "preciso de ideias", "ajuda-me a pensar em formas de", "estou sem ideias", "o que é que eu podia fazer para", "ideias para ganhar dinheiro com", "como é que eu monetizava isto". Ativa mesmo que ele não diga a palavra "brainstorm" — o sinal é querer GERAR opções, não resolver um problema fechado de resposta única. Tem um modo dedicado a ideias de dinheiro/negócio que entra automaticamente quando o tema é faturar, monetizar ou criar um negócio. NÃO uses esta skill quando já existe uma resposta certa única (cálculo, facto, debug), nem quando o utilizador quer um plano de execução de algo já decidido — isso é a skill `planeamento-detalhado`.
+---
+ 
+# Brainstorm
+ 
+O objetivo desta skill é fugir ao instinto preguiçoso de dar 3 ideias seguras e parar. Brainstorm a sério tem duas fases separadas no tempo: **divergir** (gerar muito, sem filtro) e só DEPOIS **convergir** (filtrar com critério). Misturar as duas mata o processo — assim que começas a julgar uma ideia enquanto geras, o cérebro fecha-se e só saem coisas óbvias.
+ 
+Não há aqui nenhum parâmetro de "temperatura" para mexer. O efeito de criatividade vem de seguir este processo à risca: gerar volume, suspender o julgamento na fase certa, e ir buscar ângulos de propósito.
+ 
+## Fase 0 — Enquadrar (1-2 perguntas, não mais)
+ 
+Antes de disparar ideias, faz **1 ou 2 perguntas** para não andares às cegas. Não mais do que isso — o utilizador veio buscar ideias, não um interrogatório. Escolhe as perguntas que mais mudam o resultado. Tipicamente:
+ 
+- **Qual é o objetivo real por trás disto?** (às vezes o pedido à letra não é o que ele quer mesmo)
+- **Que restrições ou recursos existem?** (tempo, dinheiro, o que ele já tem/sabe/possui, o que está fora de questão)
+Se o pedido já vier com isto tudo claro, salta as perguntas e vai direto à Fase 1. Não perguntes por perguntar.
+ 
+## Fase 1 — Divergir (gerar volume, sem julgar)
+ 
+Regra de ouro: **nada de "mas isso não dá porque..."** nesta fase. Avaliar vem depois. Aqui só geras.
+ 
+Gera **15-25 ideias**. Sim, muitas. As primeiras 5-6 vão ser óbvias — é normal e é suposto; é depois dessas que aparece o ouro. Não pares nas óbvias.
+ 
+Para não ficares preso no óbvio, força ângulos de propósito. Usa várias destas lentes, não só uma:
+ 
+- **O contrário do óbvio** — qual seria a pior ideia possível? Inverte-a. Muitas vezes a inversão revela algo bom.
+- **Roubar de outra área** — como é que isto se resolveria na restauração? Na aviação? Nos videojogos? Numa oficina? Trazer a lógica de um domínio para outro.
+- **Combinar duas coisas que não pegam** — junta dois elementos do problema (ou um do problema com algo aleatório) e vê o que sai.
+- **Levar ao extremo** — e se tivesses orçamento infinito? E se tivesses zero? E se tivesse de estar feito amanhã?
+- **Tirar uma restrição** — o que é que farias se aquela regra/limitação não existisse? Às vezes a restrição era falsa.
+- **Mudar de escala** — versão minúscula disto? Versão gigante? Versão para uma pessoa só vs. para mil?
+Apresenta as ideias como uma lista crua e rápida — uma linha cada, sem desenvolver ainda. O importante é a quantidade e a variedade. Marca eventualmente as mais fora-da-caixa para o utilizador as ver.
+ 
+## Fase 2 — Convergir (afunilar para as melhores)
+ 
+Agora sim, julga. Olha para a lista toda e escolhe as **3 a 5 melhores**. Critérios gerais:
+ 
+- **Encaixa com o objetivo e os recursos** do enquadramento?
+- **Quão difícil é arrancar** vs. o retorno?
+- Tem alguma coisa que a torna **diferente** das outras (não é só "mais do mesmo")?
+Para cada uma das finalistas, desenvolve em 2-4 linhas: o que é, porque é que vale a pena, e qual é o primeiro passo concreto. Sê honesto sobre os pontos fracos de cada uma — não vendas tudo como ouro. O utilizador responde melhor a avaliações francas do que a otimismo a mais.
+ 
+Fecha perguntando se ele quer aprofundar alguma, gerar mais uma ronda noutra direção, ou afunilar mais.
+ 
+## Modo Dinheiro (entra quando o tema é faturar/monetizar/negócio)
+ 
+Quando o brainstorm é sobre ganhar dinheiro, criar um negócio ou monetizar algo, aplica este modo POR CIMA das fases acima.
+ 
+No enquadramento (Fase 0), tenta perceber **o que a pessoa já tem para alavancar**: competências, ferramentas, tempo disponível, dinheiro para investir, audiência/contactos, e se quer algo rápido ("primeiro euro depressa") ou algo que escale a longo prazo. Estas duas coisas — ativos e horizonte — mudam tudo.
+ 
+Na divergência (Fase 1), gera ideias através destas lentes de monetização, para não ficar tudo do mesmo tipo:
+ 
+- **Vender tempo/serviço** — fazer algo para alguém (mais rápido a arrancar, não escala bem)
+- **Vender um produto** — físico ou digital, feito uma vez e vendido muitas (escala melhor, arranca mais devagar)
+- **Vender conhecimento** — ensinar, consultar, conteúdo, curso (depende de teres a experiência ou audiência)
+- **Automatizar/construir uma ferramenta** — resolver um problema chato de muita gente com algo que corre sozinho
+- **Intermediar/arbitragem** — ligar quem tem a quem precisa, ou comprar barato e vender com valor acrescentado
+- **Construir audiência primeiro** — atenção agora, monetização depois (longo prazo)
+Na convergência (Fase 2), avalia cada finalista também por:
+ 
+- **Tempo até ao primeiro euro** — semanas? meses?
+- **Quanto exige à partida** — dinheiro, equipamento, risco
+- **Teto** — isto pode dar uns trocos ou pode dar um salário? Sê realista, sem inflar.
+- **Encaixe** — aproveita o que a pessoa já tem ou começa do zero?
+Regra importante: **distingue ideias de "uns trocos rápidos" de ideias de "negócio a sério"** e diz claramente qual é qual. Misturar as duas dá expectativas erradas. E nada de promessas de dinheiro fácil — se uma ideia exige muito trabalho ou tem risco real, di-lo.
+ 
+## Exemplo de fluxo
+ 
+**Pedido:** "dá-me ideias para ganhar dinheiro com o que sei"
+ 
+1. **Fase 0:** "Duas perguntas rápidas: o que é que sabes fazer bem / tens à mão para usar? E queres uns trocos rápidos ou estás a construir algo para o longo prazo?"
+2. **Fase 1:** [com as respostas] gera 15-25 ideias cruas, passando pelas lentes de monetização, das óbvias às esquisitas, uma linha cada.
+3. **Fase 2:** escolhe 4-5, desenvolve cada uma com prós/contras honestos, tempo até faturar, primeiro passo. Marca quais são "trocos rápidos" e quais são "negócio".
+4. Pergunta o que quer aprofundar ou se quer outra ronda.
