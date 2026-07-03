@@ -1,0 +1,22 @@
+Make a gaming bot arena in JAVA.
+
+PHASE 1 - BRAINSTORM (skill.txt)
+improve and brainstorm: https://arena.pmonteiro.ovh/?room=
+check apis connection:  https://arena.pmonteiro.ovh/docs
+check: pdf, txt and md files
+Ollama for Local LLMs, one for embedding https://huggingface.co/LiquidAI/LFM2.5-Embedding-350M-GGUF,
+another for movement and chest openign with manual rag https://huggingface.co/unsloth/Qwen3.5-2B-MTP-GGUF:
+another for thinking and route planning ---:
+;
+
+
+it WILL have a interface visually of the bot visual telemetry Table map, chest purple and energy yellow;
+the ai needs to scan the map and have acess to see it like a json or table, if theres a wall or nothing in the map;
+check the a ui to insert room code and check ai usage in real time;
+
+Questions
+Is qwenembedding for move and qwen3.5 for logic thinking enough or it's good to have another model to think ahead like a leader and lead the qwen3.5(qwen3.5 can think independ but gemma calculates the best route by checkign map, like the gemma 4 E4B  with vision;
+Think the best approach for game energy hasting efficency;
+PHASE 2 - IMPLEMENTATION
+Map the arena, no need for goind where is nothing
+PHASE 3 - FINAL BUGG CHECKING AND FINAL BRAINSTORM
