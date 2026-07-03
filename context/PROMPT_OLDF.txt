@@ -1,0 +1,19 @@
+Make a gaming bot arena in JAVA.
+
+PHASE 1 - BRAINSTORM (skill.txt)
+improve and brainstorm: https://arena.pmonteiro.ovh/?room=
+check apis connection:  https://arena.pmonteiro.ovh/docs
+check: pdf, txt and md files
+Ollama for Local LLMs
+(modify OLLAMA_NUM_PARALLEL, OLLAMA_KEEP_ALIVO,LLAMA_MAX_LOADED_MODELS parameters, OLLAMA_FLASH_ATTENTION=1)
+the opening chest llm set temperate to low
+;
+
+
+it WILL have a interface visually of the bot visual telemetry Table map, chest purple and energy yellow;
+the ai needs to scan the map and have acess to see it like a json or table and save to rebember, if theres a wall or nothing in the map;
+check the a ui to insert room code and check ai usage in real time;
+
+PHASE 2 - IMPLEMENTATION
+Map the arena, no need for goind where is nothing like a wall
+PHASE 3 - FINAL BUGG CHECKING AND FINAL BRAINSTORM

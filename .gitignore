@@ -1,0 +1,47 @@
+# --- Java build output ---
+target/
+build/
+out/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+
+# --- Maven ---
+.mvn/
+mvnw
+mvnw.cmd
+
+# --- Gradle ---
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+
+# --- IDE / Editor ---
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.classpath
+.project
+.settings/
+nbproject/private/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# --- OS junk ---
+.DS_Store
+Thumbs.db
+
+# --- Secrets / local config ---
+.env
+*.env
+*.local
+
+# --- Recon / scratch artifacts ---
+recon/
+qwe3embedd.txt
+*.tmp
