@@ -1,0 +1,56 @@
+{
+  "walls" : [ {
+    "id" : "parede_w0",
+    "type" : "cubo",
+    "model" : "cubo.glb",
+    "x" : 0.0,
+    "y" : 4.0,
+    "z" : 0.5
+  }, {
+    "id" : "parede_w1",
+    "type" : "cubo",
+    "model" : "cubo.glb",
+    "x" : 1.0,
+    "y" : 4.0,
+    "z" : 0.5
+  }, {
+    "id" : "parede_w2",
+    "type" : "cubo",
+    "model" : "cubo.glb",
+    "x" : 2.0,
+    "y" : 4.0,
+    "z" : 0.5
+  }, {
+    "id" : "parede_w3",
+    "type" : "cubo",
+    "model" : "cubo.glb",
+    "x" : 3.0,
+    "y" : 4.0,
+    "z" : 0.5
+  }, {
+    "id" : "parede_w4",
+    "type" : "cubo",
+    "model" : "cubo.glb",
+    "x" : 4.0,
+    "y" : 4.0,
+    "z" : 0.5
+  }, {
+    "id" : "parede_w5",
+    "type" : "cubo",
+    "model" : "cubo.glb",
+    "x" : 5.0,
+    "y" : 4.0,
+    "z" : 0.5
+  } ],
+  "resources" : [ ],
+  "robots" : { },
+  "vaults" : [ ],
+  "me" : {
+    "x" : 0.0,
+    "y" : 0.0,
+    "z" : 0.0,
+    "energia" : 200,
+    "cor" : "#0ea5e9"
+  },
+  "lastUpdateMs" : 1783089233474
+}

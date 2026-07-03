@@ -1,0 +1,46 @@
+{
+  "room_code": "7A1071",
+  "robot_id_prefix": "javabot",
+  "arena_base_url": "https://arena.pmonteiro.ovh",
+  "ollama_base_url": "http://127.0.0.1:11434",
+  "tick_ms": 700,
+  "commander_period_ms": 7000,
+  "energy_critical_threshold": 80,
+  "energy_low_threshold": 120,
+  "models": {
+    "chest": {
+      "model_name": "lfm2-350m-extract",
+      "temperature": 0.1,
+      "keep_alive": "24h",
+      "notes": "Deterministic extractive model for vault prompts (low temp)."
+    },
+    "embedding": {
+      "model_name": "lfm2.5-embedding-350m",
+      "temperature": 0.0,
+      "keep_alive": "24h",
+      "notes": "Cosine search over the 15-section manual."
+    },
+    "bot_move": {
+      "model_name": "qwen3.5-0.8b-mtp",
+      "temperature": 0.3,
+      "keep_alive": "24h",
+      "notes": "Two-line move parser / fallback oracle when A* is too cautious."
+    },
+    "commander": {
+      "model_name": "gemma4-nano-e2b",
+      "temperature": 0.4,
+      "keep_alive": "24h",
+      "notes": "Macro-planner Tier 1, runs every commander_period_ms."
+    }
+  },
+  "ui": {
+    "grid_pixel_size": 32,
+    "grid_x_max": 16,
+    "grid_y_max": 16,
+    "auto_fuzz_on_connect": false,
+    "auto_fuzz_actions": [
+      "andare", "mover", "avancar", "recuar", "girar_esq", "girar_dir",
+      "abrir", "recolher", "usar", "status", "atacar"
+    ]
+  }
+}
