@@ -2,6 +2,7 @@ package com.arenabot.ui;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -18,11 +19,13 @@ public final class TelemetryBus {
     public record Sample(String label, int tokensIn, int tokensOut, long elapsedMs, String text) {}
 
     private final AtomicReference<Sample> latest = new AtomicReference<>(new Sample("idle", 0, 0, 0L, ""));
+    private final AtomicInteger totalCalls = new AtomicInteger();
     private final Deque<String> recentLines = new ArrayDeque<>();
     private static final int MAX_LINES = 80;
 
     public void publish(Sample s) {
         latest.set(s);
+        totalCalls.incrementAndGet();
         synchronized (recentLines) {
             recentLines.addLast(s.label() + " · " + s.text());
             while (recentLines.size() > MAX_LINES) recentLines.pollFirst();
@@ -30,6 +33,9 @@ public final class TelemetryBus {
     }
 
     public Sample latest() { return latest.get(); }
+
+    /** Total LLM/embedding samples published since boot ("Chamadas LLM"). */
+    public int totalCalls() { return totalCalls.get(); }
 
     public String[] recentLinesSnapshot() {
         synchronized (recentLines) {

@@ -17,7 +17,7 @@ import com.arenabot.strategy.AdaptiveStrategy;
 import com.arenabot.strategy.OpponentAwareness;
 import com.arenabot.strategy.VaultAttemptLedger;
 import com.arenabot.ui.TelemetryBus;
-import com.arenabot.ui.TelemetryDashboard;
+import com.arenabot.ui.ArenaDashboard;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +34,7 @@ import java.nio.file.Paths;
  *     ↘ MapMemory → A* within BotOrchestrator
  *     ↘ CircuitBreaker, StuckTileDetector, AdaptiveStrategy,
  *        OpponentAwareness, VaultAttemptLedger (Phase 3)
- *     ↘ TelemetryBus → TelemetryDashboard (Swing EDT)
+ *     ↘ TelemetryBus → ArenaDashboard (Swing EDT)
  * </pre>
  * If the JVM has no GUI (headless server) the bot still runs, just without
  * the Swing frame — useful for CI smoke tests.
@@ -89,15 +89,21 @@ public final class Main {
 
         boolean headless = GraphicsEnvironment.isHeadless();
         if (!headless) {
-            TelemetryDashboard ui = new TelemetryDashboard(config, orchestrator, bus);
+            ArenaDashboard ui = new ArenaDashboard(config, orchestrator, bus);
             if (!roomOverride.isEmpty()) ui.overrideRoomCode(roomOverride);
             ui.show();
         } else {
             // No dashboard start button in headless mode — start immediately
             // and park the main thread; the tick scheduler runs on daemon
             // threads, so returning here would end the JVM.
-            LOG.info("headless JVM — starting bot without Swing dashboard");
-            orchestrator.startWithRoomCode(roomOverride.isEmpty() ? config.roomCode() : roomOverride);
+            String room = roomOverride.isEmpty() ? config.roomCode() : roomOverride;
+            if (room == null || room.isBlank()) {
+                LOG.error("no room code configured — headless start needs "
+                        + "-Darenabot.room.code=<code> (run-bot.ps1 -Room) or room_code in config/config.json");
+                return;
+            }
+            LOG.info("headless JVM — starting bot without Swing dashboard (room={})", room);
+            orchestrator.startWithRoomCode(room);
             try {
                 Thread.currentThread().join();
             } catch (InterruptedException ie) {

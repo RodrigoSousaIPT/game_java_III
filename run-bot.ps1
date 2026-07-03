@@ -9,10 +9,11 @@
     tools/apache-maven-3.9.9/bin/mvn.cmd.
 
     The Swing dashboard opened by com.arenabot.Main IS the telemetry:
-      - RoomCodePanel     (start/stop button + status)
-      - GridPanel         (walls in grey, chests purple, energy yellow,
-                           vaults red, bot cyan, opponents violet)
-      - AnalyticsPanel    (live role / tok in-out / elapsed + tail of lines)
+      - ArenaDashboard    (room-code field [no default], Ligar/Parar,
+                           AI-usage sidebar + Sense-Think-Act log,
+                           telemetry strip: HP / Pos / Modo / Turno / Tempo)
+      - HeatMapPanel      (fog-of-war heat map: azul=eu, dourado=cofre,
+                           verde=recurso, vermelho=rival, cinza=muro)
     This script does not duplicate that UI; it just launches the bot, lets
     the user pre-flight the endpoints, edit config, and inspect/tail the
     slf4j-simple log stream this script writes to data/logs/bot-*.log.
@@ -186,7 +187,8 @@ function Get-ConfigValue {
 
 function Test-Arena {
     $base = Get-ConfigValue -Key 'arena_base_url' -Default 'https://arena.pmonteiro.ovh'
-    $room = Get-ConfigValue -Key 'room_code' -Default '7A1071'
+    $room = Get-ConfigValue -Key 'room_code' -Default ''
+    if (-not $room) { $room = '(none — type it in the dashboard)' }
     Write-Banner "Pre-flight: arena  $base  (room $room)"
     try {
         # /openapi.json is small and always served
@@ -358,7 +360,7 @@ function Run-Tests {
 function Show-Menu {
     Clear-Host
     $cfg = Read-ConfigObject
-    $room = if ($cfg) { "$($cfg.room_code)" } else { '(none)' }
+    $room = if ($cfg -and "$($cfg.room_code)") { "$($cfg.room_code)" } else { '(none)' }
     $ollama = if ($cfg) { "$($cfg.ollama_base_url)" } else { '(none)' }
     $procId = Get-StoredPid
     $status = if ($procId) { "RUNNING (PID $procId)" } else { 'stopped' }

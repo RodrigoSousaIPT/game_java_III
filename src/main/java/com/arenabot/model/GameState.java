@@ -79,7 +79,7 @@ public final class GameState {
     public Map<String, OutroRobot> outrosRobots() { return Collections.unmodifiableMap(outrosRobots); }
     public List<CofreNoMundo> cofresNoMundo() { return Collections.unmodifiableList(cofresNoMundo); }
 
-    /** Dev helper used by the GridPanel; exposes mutable list for in-place updates. */
+    /** Dev helper used by the UI layer; exposes mutable list for in-place updates. */
     void replaceWorld(GameState other) {
         this.meuEstado = other.meuEstado;
         this.recursosNoMundo = new ArrayList<>(other.recursosNoMundo);

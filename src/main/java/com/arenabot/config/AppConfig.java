@@ -24,7 +24,9 @@ import java.util.Map;
  */
 public final class AppConfig {
 
-    private String roomCode = "7A1071";
+    // No default room code — the operator provides one at every launch
+    // (dashboard field, -Darenabot.room.code, or explicit config entry).
+    private String roomCode = "";
     private String robotIdPrefix = "javabot";
     private String arenaBaseUrl = "https://arena.pmonteiro.ovh";
     private String ollamaBaseUrl = "http://127.0.0.1:11434";

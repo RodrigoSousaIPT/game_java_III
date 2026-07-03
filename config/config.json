@@ -1,5 +1,5 @@
 {
-  "room_code": "7A1071",
+  "room_code": "",
   "robot_id_prefix": "javabot",
   "arena_base_url": "https://arena.pmonteiro.ovh",
   "ollama_base_url": "http://127.0.0.1:11434",

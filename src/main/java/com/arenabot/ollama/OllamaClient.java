@@ -61,7 +61,7 @@ public final class OllamaClient {
 
     public PromptRingBuffer prompts() { return prompts; }
 
-    /** Wire the Swing telemetry bus so the AnalyticsPanel shows live LLM stats. */
+    /** Wire the Swing telemetry bus so the dashboard shows live LLM stats. */
     public void attachTelemetry(TelemetryBus bus) { this.bus = bus; }
 
     public CompletableFuture<OllamaResponse> generateAsync(LlmRole role, String prompt) {

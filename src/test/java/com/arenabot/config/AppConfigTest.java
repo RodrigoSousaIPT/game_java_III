@@ -9,12 +9,11 @@ class AppConfigTest {
     @Test void loadsBundledTemplate() throws Exception {
         AppConfig c = AppConfig.load(null);
         assertNotNull(c);
-        assertEquals("7A1071", c.roomCode());
+        // No default room code — the operator types one at every launch.
+        assertTrue(c.roomCode().isEmpty(), "room_code must ship blank");
         assertTrue(c.tickMs() > 0L);
         assertEquals(4, c.models().size(), "expects 4 swappable roles");
-        assertEquals("chest", c.models().get("chest").modelName().equals("lfm2-350m-extract")
-                || !c.models().get("chest").modelName().isEmpty() ? "chest"
-                : c.models().keySet().iterator().next());
+        assertFalse(c.models().get("chest").modelName().isEmpty(), "chest role must name a model");
     }
 
     @Test void resolvesRolesFromConfigKeys() {

@@ -34,6 +34,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -63,6 +64,7 @@ public final class BotOrchestrator {
     private final VaultAttemptLedger vaultLedger;
 
     private final AtomicReference<GameState> last = new AtomicReference<>();
+    private final AtomicLong ticks = new AtomicLong();
     private ScheduledExecutorService scheduler;
     private String robotId;
     private volatile boolean running;
@@ -160,6 +162,8 @@ public final class BotOrchestrator {
     public String robotId() { return robotId; }
     public GameState lastState() { return last.get(); }
     public String activeRoomCode() { return activeRoomCode; }
+    public boolean isRunning() { return running; }
+    public long tickCount() { return ticks.get(); }
     public MemorySnapshot stateSnapshotForUi() { return memory.snapshot(); }
     public PromptRingBuffer promptBuffer() { return prompts; }
     public CircuitBreaker actionCircuit() { return actionBreaker; }
@@ -170,6 +174,7 @@ public final class BotOrchestrator {
 
     private void tick() {
         if (!running) return;
+        ticks.incrementAndGet();
         String room = activeRoomCode;
         try {
             GameState state = ApiRetry.call(
